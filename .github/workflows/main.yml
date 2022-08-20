@@ -1,0 +1,83 @@
+name: Satellites  
+on: [push]
+jobs:
+  deploy_source:
+    name: Deploy API Using Lambda
+    strategy:
+      matrix:
+        node-version: [12.x]
+    runs-on: ubuntu-latest
+    steps:
+    
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm install and build
+        run: |
+          npm ci
+          npm run build --if-present
+        env:
+          CI: true
+
+      - name: /satellites post lambda deploy zip
+        uses: postman-open-technologies/satellites@main
+        with:
+            args: zip -qq -r m-s-satellites-po.zip satellites/post/index.js node_modules
+      - name: satellites get lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+            aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+            aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws_region: us-west-1
+            function_name: m-s-satellites-po
+            zip_file: m-s-satellites-po.zip
+      - name: /satellites get lambda deploy zip
+        uses: postman-open-technologies/satellites@main
+        with:
+            args: zip -qq -r m-s-satellites-g.zip satellites/get/index.js node_modules
+      - name: satellites get lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+            aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+            aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws_region: us-west-1
+            function_name: m-s-satellites-g
+            zip_file: m-s-satellites-g.zip
+      - name: /satellites/{satellite_id} get lambda deploy zip
+        uses: postman-open-technologies/satellites@main
+        with:
+            args: zip -qq -r m-s-satellites-satellite-g.zip satellites/satellite_id/get/index.js node_modules
+      - name: satellites get lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+            aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+            aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws_region: us-west-1
+            function_name: m-s-satellites-satellite-g
+            zip_file: m-s-satellites-satellite-g.zip
+      - name: /satellites/{satellite_id} put lambda deploy zip
+        uses: postman-open-technologies/satellites@main
+        with:
+            args: zip -qq -r m-s-satellites-satellite-pu.zip satellites/satellite_id/put/index.js node_modules
+      - name: satellites get lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+            aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+            aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws_region: us-west-1
+            function_name: m-s-satellites-satellite-pu
+            zip_file: m-s-satellites-satellite-pu.zip
+      - name: /satellites/{satellite_id} delete lambda deploy zip
+        uses: postman-open-technologies/satellites@main
+        with:
+            args: zip -qq -r m-s-satellites-satellite-d.zip satellites/satellite_id/delete/index.js node_modules
+      - name: satellites get lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+            aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+            aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws_region: us-west-1
+            function_name: m-s-satellites-satellite-d
+            zip_file: m-s-satellites-satellite-d.zip          
