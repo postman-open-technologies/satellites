@@ -39,18 +39,15 @@ exports.handler = vandium.generic()
       limit = 25;
     }
 
-    var sql = "SELECT * FROM satellites b WHERE id IS NOT NULL";
+    var sql = "SELECT * FROM satellites s WHERE id IS NOT NULL";
     if(search != ''){
-       sql += " AND b.name LIKE '%" + search + "%'";
+       sql += " AND s.name LIKE '%" + search + "%'";
     }
-    if(role != ''){
-       sql += " AND id IN(SELECT satellite_id FROM satellites_roles WHERE role_id IN(SELECT id FROM roles WHERE name = '" + role + "'))";
-    }   
     if(tags != ''){
        sql += " AND id IN(SELECT satellite_id FROM satellites_tags WHERE tag_id IN(SELECT id FROM tags WHERE name IN ('" + tags.replace(",","','") + "')))";
     }     
     sql += " ORDER BY name";
-    sql += " LIMIT " + event.page + "," + event.limit;
+    sql += " LIMIT " + page + "," + limit;
     connection.query(sql, function (error, results, fields) {
 
     callback( null, results );
